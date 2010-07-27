@@ -105,6 +105,10 @@ class User < ActiveRecord::Base
   has_many :notes, :order => "created_at DESC", :dependent => :delete_all
   has_one :preference, :dependent => :destroy
   
+  has_many :subusers, :class_name => "User", :foreign_key => "subuser_id"
+  
+  belongs_to :mainuser, :class_name => "User"
+  
   attr_protected :is_admin
 
   validates_presence_of :login
