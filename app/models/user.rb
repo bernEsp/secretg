@@ -105,10 +105,13 @@ class User < ActiveRecord::Base
   has_many :notes, :order => "created_at DESC", :dependent => :delete_all
   has_one :preference, :dependent => :destroy
   
+  # Self referential join to trace the relationships between the MainUsers and SubUsers
   has_many :subusers, :class_name => "User", :foreign_key => "subuser_id"
-  
   belongs_to :mainuser, :class_name => "User"
-  
+
+  # Roles by Aegis gem
+  has_role
+
   attr_protected :is_admin
 
   validates_presence_of :login

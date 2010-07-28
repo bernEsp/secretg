@@ -22,6 +22,7 @@ Rails::Initializer.run do |config|
   config.load_paths += %W( #{RAILS_ROOT}/app/apis )
 
   config.gem "highline"
+  config.gem 'aegis'
 
   config.action_controller.use_accept_header = true
 
