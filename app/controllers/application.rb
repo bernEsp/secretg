@@ -190,7 +190,7 @@ class ApplicationController < ActionController::Base
   protected
   
   def admin_login_required
-    unless User.find_by_id_and_is_admin(session['user_id'], true)
+    unless User.find_by_id_and_is_admin(session['user_id'], true) || User.find_by_id_and_role_name(session['user_id'], 'mainuser')
       render :text => "401 Unauthorized: Only admin users are allowed access to this function.", :status => 401
       return false
     end

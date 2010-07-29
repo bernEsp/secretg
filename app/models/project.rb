@@ -2,6 +2,9 @@ class Project < ActiveRecord::Base
   has_many :todos, :dependent => :delete_all, :include => :context
   has_many :notes, :dependent => :delete_all, :order => "created_at DESC"
   has_many :recurring_todos
+
+  # Roles by Aegis gem
+  has_role
   belongs_to :default_context, :class_name => "Context", :foreign_key => "default_context_id"
   belongs_to :user
 

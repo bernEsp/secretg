@@ -63,6 +63,8 @@ window.onload=function(){
   <li><%= navigation_link( "Export", {:controller => "data", :action => "index"}, {:accesskey => "i", :title => "Import and export data"} ) %></li>
   <% if current_user.is_admin? -%>
     <li><%= navigation_link("Admin", users_path, {:accesskey => "a", :title => "Add or delete users"} ) %></li>
+  <% elsif current_user.role_name == "mainuser" || current_user.role_name == "subuser_projects"%>
+    <li><%= navigation_link("Users", users_path, {:accesskey => "a", :title => "Add or delete users"} ) %></li>
   <% end -%>
   <li><%= navigation_link(image_tag("x-office-calendar.png", :size => "16X16", :border => 0), calendar_path, :title => "Calendar of due actions" ) %></li>
   <li><%= navigation_link(image_tag("recurring_menu16x16.png", :size => "16X16", :border => 0), {:controller => "recurring_todos", :action => "index"}, :title => "Manage recurring actions" ) %></li>

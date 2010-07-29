@@ -9,6 +9,7 @@
 
   <table>
     <tr>
+      <%= hidden_field("user", "type", :value => params['type'])%>
       <td><label for="user_login">Desired login:</label></td>
       <td> <%= text_field "user", "login", :size => 20 %></td>
     </tr>

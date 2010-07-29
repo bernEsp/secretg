@@ -2,15 +2,21 @@ class UsersController < ApplicationController
   before_filter :admin_login_required, :only => [ :index, :show, :destroy ]
   skip_before_filter :login_required, :only => [ :new, :create ]
   prepend_before_filter :login_optional, :only => [ :new, :create ]
-  
+
   # GET /users GET /users.xml
   def index
-    @users  = User.find(:all, :order => 'login')
+    @user = User.find(session['user_id'])
+    if @user.is_admin? 
+      @users  = User.find(:all, :order => 'login')
+    else
+      @users = User.find(:all, :conditions => ["mainuser_id = ?", @user.id])
+    end
+#    @users  = User.find(:all, :order => 'login')
     respond_to do |format|
       format.html do
         @page_title = "TRACKS::Manage Users"
-        @users = User.paginate :page => params[:page], :order => 'login ASC'
-        @total_users = User.count
+        @users = User.paginate :conditions => ["mainuser_id = ?", @user.id], :page => params["page"], :order => 'login ASC'
+        @total_users = @users.count
         # When we call users/signup from the admin page we store the URL so that
         # we get returned here when signup is successful
         store_location
@@ -32,7 +38,11 @@ class UsersController < ApplicationController
       @heading = "Welcome to TRACKS. To get started, please create an admin account:"
       @user = get_new_user
     elsif @user && @user.is_admin?
-      @page_title = "TRACKS::Sign up a new user"
+      @page_title = "TRACKS::Sign up a new mainuser"
+      @heading = "Sign up a new user:"
+      @user = get_new_user
+    elsif @user.role_name == "mainuser"
+      @page_title = "TRACKS::Sign up a new subuser or subuser_projects"
       @heading = "Sign up a new user:"
       @user = get_new_user
     else # all other situations (i.e. a non-admin is logged in, or no one is logged in, but we have some users)
@@ -58,7 +68,7 @@ class UsersController < ApplicationController
     end
     respond_to do |format|
       format.html do
-        unless User.no_users_yet? || (@user && @user.is_admin?)
+        unless User.no_users_yet? || (@user && @user.is_admin? || @user.role_name == "mainuser")
           @page_title = "No signups"
           @admin_email = User.find_admin.preference.admin_email
           render :action => "nosignup", :layout => "login"
@@ -74,6 +84,16 @@ class UsersController < ApplicationController
 
         first_user_signing_up = User.no_users_yet?
         user.is_admin = true if first_user_signing_up
+        if user.is_admin?
+          user.role_name = "mainuser"
+        else
+          user.mainuser_id = session['user_id']
+          if params['user']['type'] == "plus"
+            user.role_name = "subuser_projects"
+          elsif params['user']['type'] == "normal"
+            user.role_name = "subuser"
+          end
+        end
         if user.save
           @user = User.authenticate(user.login, params['user']['password'])
           @user.create_preference
@@ -85,7 +105,7 @@ class UsersController < ApplicationController
         return
       end
       format.xml do
-        unless User.find_by_id_and_is_admin(session['user_id'], true)
+        unless User.find_by_id_and_is_admin(session['user_id'], true) || User.find_by_id_and_role_name(session['user_id'], "mainuser")
           render :text => "401 Unauthorized: Only admin users are allowed access to this function.", :status => 401
           return
         end
