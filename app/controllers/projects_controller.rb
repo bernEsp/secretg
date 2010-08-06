@@ -7,6 +7,7 @@ class ProjectsController < ApplicationController
   skip_before_filter :login_required, :only => [:index]
   prepend_before_filter :login_or_feed_token_required, :only => [:index]
   session :off, :only => :index, :if => Proc.new { |req| ['rss','atom','txt'].include?(req.parameters[:format]) }
+  permissions :projects
 
   def index
     @projects = current_user.projects(true)

@@ -10,10 +10,10 @@ class Permissions < Aegis::Permissions
       allow :subuser_projects
       deny :subuser
     end
-    action :show do
+    action :show, :index do
       allow :mainuser
       allow :subuser_projects
-      deny :subuser
+      allow :subuser
     end
     action :destroy do
       allow :mainuser
