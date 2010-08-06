@@ -219,6 +219,10 @@ class User < ActiveRecord::Base
     save(false)
   end
 
+  def is_mainuser?
+    self.role_name == "mainuser"
+  end
+
 protected
 
   def self.sha1(s)
@@ -245,5 +249,6 @@ protected
   def normalize_open_id_url
     return if open_id_url.nil?
     self.open_id_url = OpenIdAuthentication.normalize_url(open_id_url)
-  end
+  end  
+
 end

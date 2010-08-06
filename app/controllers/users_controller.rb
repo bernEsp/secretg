@@ -8,10 +8,10 @@ class UsersController < ApplicationController
 
   # GET /users GET /users.xml
   def index
-    @user = User.find(session['user_id'])
+    @user = current_user
     if @user.is_admin? 
       @users  = User.find(:all, :order => 'login')
-    else
+    elsif @user.is_mainuser?
       @users = User.find(:all, :conditions => ["mainuser_id = ?", @user.id])
     end
 #    @users  = User.find(:all, :order => 'login')
@@ -90,10 +90,10 @@ class UsersController < ApplicationController
         if current_user.is_admin?
           user.role_name = "mainuser"
           user.is_admin = false
-          user.mainuser_id = current_user
+          user.mainuser = current_user
         else
           user.is_admin = false
-          user.mainuser_id = current_user
+          user.mainuser = current_user
           if params['user']['type'] == "plus"
             user.role_name = "subuser_projects"
           elsif params['user']['type'] == "normal"
