@@ -1,0 +1,15 @@
+<h2> Edit User </h2>
+<% form_for @user do |f|%>
+  <p>
+    <%= f.label :login, "Change login:"%>
+    <%= f.text_field :login%>
+    <%= f.label :pasword, "Change Password:"%>
+    <%= f.password_field :password%>
+    <%= f.label :pasword_confirmation, "Confirm password:"%>
+    <%= f.password_field :password_confirmation%>
+  </p>
+  <br/>
+  <h2>Assign project</h2>
+
+  <%= f.submit 'Save Changes'%>
+<% end %>

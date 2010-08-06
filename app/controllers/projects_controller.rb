@@ -294,5 +294,4 @@ class ProjectsController < ApplicationController
     project_description += "</p>"
     project_description
   end
-
 end

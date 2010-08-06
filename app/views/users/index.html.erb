@@ -24,6 +24,7 @@
       <td><%= h user.contexts.size %></td>
       <td><%= h user.projects.size %></td>
       <td><%= h user.notes.size %></td>
+      <td><%= link_to "Edit", edit_user_path(user.id)%></td>
       <td><%= !user.is_admin? ? link_to_remote(
           image_tag("blank.png", :title =>"Destroy user", :class=>"delete_item"),
           { :url => user_path(user.id), :method => :delete,

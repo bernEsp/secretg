@@ -1,8 +1,12 @@
 require 'digest/sha1'
 
 class User < ActiveRecord::Base
+  #
+  # Associate By
+  #
   # Virtual attribute for the unencrypted password
   attr_accessor :password
+
 
   has_many :contexts,
            :order => 'position ASC',
@@ -11,62 +15,60 @@ class User < ActiveRecord::Base
                find(params['id'] || params['context_id']) || nil
              end
            end
-  has_many :projects,
-           :order => 'projects.position ASC',
-           :dependent => :delete_all do
-              def find_by_params(params)
-                find(params['id'] || params['project_id'])
-              end
-              def update_positions(project_ids)
-                project_ids.each_with_index do |id, position|
-                  project = self.detect { |p| p.id == id.to_i }
-                  raise "Project id #{id} not associated with user id #{@user.id}." if project.nil?
-                  project.update_attribute(:position, position + 1)
-                end
-              end
-              def projects_in_state_by_position(state)
-                  self.sort{ |a,b| a.position <=> b.position }.select{ |p| p.state == state }
-              end
-              def next_from(project)
-                self.offset_from(project, 1)
-              end
-              def previous_from(project)
-                self.offset_from(project, -1)
-              end
-              def offset_from(project, offset)
-                projects = self.projects_in_state_by_position(project.state)
-                position = projects.index(project)
-                return nil if position == 0 && offset < 0
-                projects.at( position + offset)
-              end
-              def cache_note_counts
-                project_note_counts = Note.count(:group => 'project_id')
-                self.each do |project|
-                  project.cached_note_count = project_note_counts[project.id] || 0
-                end
-              end
-              def alphabetize(scope_conditions = {})
-                projects = find(:all, :conditions => scope_conditions)
-                projects.sort!{ |x,y| x.name.downcase <=> y.name.downcase }
-                self.update_positions(projects.map{ |p| p.id })
-                return projects
-              end
-              def actionize(user_id, scope_conditions = {})
-                @state = scope_conditions[:state]
-                query_state = ""
-                query_state = "AND project.state = '" + @state +"' "if @state
-                projects = Project.find_by_sql([
-                    "SELECT project.id, count(todo.id) as p_count " +
-                      "FROM projects as project " +
-                      "LEFT OUTER JOIN todos as todo ON todo.project_id = project.id "+
-                      "WHERE project.user_id = ? AND NOT (todo.state='completed') " +
-                      query_state +
-                      " GROUP BY project.id ORDER by p_count DESC",user_id])
-                self.update_positions(projects.map{ |p| p.id })
-                projects = find(:all, :conditions => scope_conditions)
-                return projects
-              end
-            end
+  has_many :projects, :order => 'projects.position ASC', :dependent => :delete_all do
+    def find_by_params(params)
+      find(params['id'] || params['project_id'])
+    end
+    def update_positions(project_ids)
+      project_ids.each_with_index do |id, position|
+        project = self.detect { |p| p.id == id.to_i }
+        raise "Project id #{id} not associated with user id #{@user.id}." if project.nil?
+        project.update_attribute(:position, position + 1)
+      end
+    end
+    def projects_in_state_by_position(state)
+        self.sort{ |a,b| a.position <=> b.position }.select{ |p| p.state == state }
+    end
+    def next_from(project)
+      self.offset_from(project, 1)
+    end
+    def previous_from(project)
+      self.offset_from(project, -1)
+    end
+    def offset_from(project, offset)
+      projects = self.projects_in_state_by_position(project.state)
+      position = projects.index(project)
+      return nil if position == 0 && offset < 0
+      projects.at( position + offset)
+    end
+    def cache_note_counts
+      project_note_counts = Note.count(:group => 'project_id')
+      self.each do |project|
+        project.cached_note_count = project_note_counts[project.id] || 0
+      end
+    end
+    def alphabetize(scope_conditions = {})
+      projects = find(:all, :conditions => scope_conditions)
+      projects.sort!{ |x,y| x.name.downcase <=> y.name.downcase }
+      self.update_positions(projects.map{ |p| p.id })
+      return projects
+    end
+    def actionize(user_id, scope_conditions = {})
+      @state = scope_conditions[:state]
+      query_state = ""
+      query_state = "AND project.state = '" + @state +"' "if @state
+      projects = Project.find_by_sql([
+          "SELECT project.id, count(todo.id) as p_count " +
+            "FROM projects as project " +
+            "LEFT OUTER JOIN todos as todo ON todo.project_id = project.id "+
+            "WHERE project.user_id = ? AND NOT (todo.state='completed') " +
+            query_state +
+            " GROUP BY project.id ORDER by p_count DESC",user_id])
+      self.update_positions(projects.map{ |p| p.id })
+      projects = find(:all, :conditions => scope_conditions)
+      return projects
+    end
+  end
   has_many :active_projects,
            :class_name => 'Project',
            :order => 'projects.position ASC',

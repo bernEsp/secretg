@@ -44,5 +44,4 @@ module ProjectsHelper
     end
     html
   end
-  
 end

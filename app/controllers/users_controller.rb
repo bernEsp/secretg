@@ -1,4 +1,7 @@
 class UsersController < ApplicationController
+  #
+  # Autocomplete
+  #
   before_filter :admin_login_required, :only => [ :index, :show, :destroy ]
   skip_before_filter :login_required, :only => [ :new, :create ]
   prepend_before_filter :login_optional, :only => [ :new, :create ]
@@ -125,6 +128,21 @@ class UsersController < ApplicationController
     end
   end  
   
+  def edit
+    @user = User.find(params[:id])
+    mainuser = @user.mainuser
+    @projects = User.find(mainuser).projects
+  end
+
+  def update
+    @user = User.find(params[:id])
+    unless @user.update_attributes(params[:user])
+      redirect_to edit_user_path
+    else
+      flash[:notice] = "User was changed succesfully"
+      render :action => :index
+    end
+  end
   # DELETE /users/id DELETE /users/id.xml
   def destroy
     @deleted_user = User.find_by_id(params[:id])
@@ -222,5 +240,15 @@ class UsersController < ApplicationController
     return false if params[:request][:password].empty?
     return true
   end
-  
+
+  def unassign
+    @project = Project.find(params[:id])
+    @user = User.find(params[:user_id])
+    unless @user.projects.delete(@project)
+      redirect_to edit_admin_user_path
+    else
+      flash[:notice] = "User was unassigned successfully"
+      redirect_to edit_admin_user_path
+    end
+  end
 end

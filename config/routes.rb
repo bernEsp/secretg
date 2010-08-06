@@ -10,12 +10,13 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resources :users,
                 :member => {:change_password => :get, :update_password => :post,
-                             :change_auth_type => :get, :update_auth_type => :post, :complete => :get,
-                             :refresh_token => :post }
+                             :change_auth_type => :get, :update_auth_type => :post, :complete => :get,:refresh_token => :post }
+
   map.with_options :controller => "users" do |users|
     users.signup 'singup/:type', :action => "new"
   end
-
+  map.resources :users, :member => {:unassign => :get}
+ 
   map.resources :contexts, :collection => {:order => :post} do |contexts|
     contexts.resources :todos, :name_prefix => "context_"
   end
