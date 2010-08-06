@@ -87,10 +87,13 @@ class UsersController < ApplicationController
 
         first_user_signing_up = User.no_users_yet?
         user.is_admin = true if first_user_signing_up
-        if user.is_admin?
+        if current_user.is_admin?
           user.role_name = "mainuser"
+          user.is_admin = false
+          user.mainuser_id = current_user
         else
-          user.mainuser_id = session['user_id']
+          user.is_admin = false
+          user.mainuser_id = current_user
           if params['user']['type'] == "plus"
             user.role_name = "subuser_projects"
           elsif params['user']['type'] == "normal"

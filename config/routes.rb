@@ -13,7 +13,7 @@ ActionController::Routing::Routes.draw do |map|
                              :change_auth_type => :get, :update_auth_type => :post, :complete => :get,:refresh_token => :post }
 
   map.with_options :controller => "users" do |users|
-    users.signup 'singup/:type', :action => "new"
+    users.signup 'singup/:type', :action => "new", :type => nil
   end
   map.resources :users, :member => {:unassign => :get}
  
